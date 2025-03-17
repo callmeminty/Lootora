@@ -9,7 +9,86 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        /* Your existing CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #d1d8e0);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .points {
+            background: #eaf7ea;
+            border: 2px solid #27ae60;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            margin-top: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:nth-child(odd) {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        button:nth-child(odd):hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        button:nth-child(even) {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+
+        button:nth-child(even):hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Message for unsupported devices */
+        .unsupported-message {
+            font-size: 18px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -20,9 +99,12 @@
         <span id="flag"></span>
     </div>
 
+    <!-- Buttons to show rewarded content -->
     <button onclick="showRewardedPopup()">Watch Rewarded Popup</button>
     <button onclick="showRewardedAd()">Watch Rewarded Ad</button>
     <button onclick="cashout()">Cashout</button>
+
+    <div id="unsupported-message" class="unsupported-message"></div>
 
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
@@ -100,6 +182,9 @@
             window.cashout = function() {
                 alert("Cashout feature coming soon! Stay tuned.");
             };
+
+            // Hide "desktop not allowed" message
+            document.getElementById('unsupported-message').style.display = 'none';
         });
     </script>
 </body>
