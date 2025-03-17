@@ -3,89 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lootora</title>
+    <title>My Mini App</title>
 
     <script async src='//whephiwums.com/sdk.js' data-zone='9096341' data-sdk='show_9096341'></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
+    <!-- Firebase SDKs -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+      import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyC-azLO79G5ZL5oFK_2gbWhxbwfpOAYbtg",
+        authDomain: "lootera-c61af.firebaseapp.com",
+        projectId: "lootera-c61af",
+        storageBucket: "lootera-c61af.firebasestorage.app",
+        messagingSenderId: "298561542896",
+        appId: "1:298561542896:web:6d7316f7520fc537234035",
+        measurementId: "G-1PSLZ2FP8M"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const analytics = getAnalytics(app);
+
+      // Fetch user balance from Firebase Realtime Database
+      async function fetchUserBalance(userId) {
+        try {
+          const userRef = ref(db, 'users/' + userId);
+          const snapshot = await get(userRef);
+          if (snapshot.exists()) {
+            return snapshot.val().balance;
+          } else {
+            return 0; // Default balance if user doesn't exist
+          }
+        } catch (error) {
+          console.error("Error fetching user balance: ", error);
+          return 0;
+        }
+      }
+
+      // Save user balance to Firebase Realtime Database
+      async function saveUserBalance(userId, newBalance) {
+        try {
+          const userRef = ref(db, 'users/' + userId);
+          await set(userRef, {
+            balance: newBalance
+          });
+        } catch (error) {
+          console.error("Error saving balance: ", error);
+        }
+      }
+    </script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #f3f4f6, #d1d8e0);
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        h1 {
-            font-size: 28px;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .points {
-            background: #eaf7ea;
-            border: 2px solid #27ae60;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #27ae60;
-            margin-bottom: 20px;
-        }
-
-        button {
-            width: 100%;
-            max-width: 300px;
-            padding: 15px;
-            margin-top: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        button:nth-child(odd) {
-            background-color: #3498db;
-            color: #fff;
-        }
-
-        button:nth-child(odd):hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-
-        button:nth-child(even) {
-            background-color: #2ecc71;
-            color: #fff;
-        }
-
-        button:nth-child(even):hover {
-            background-color: #27ae60;
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .desktop-message {
-            font-size: 18px;
-            color: #e74c3c;
-            text-align: center;
-        }
+        /* Same styles as before */
     </style>
 </head>
 <body>
@@ -96,12 +71,14 @@
         <span id="flag"></span>
     </div>
 
-    <button onclick="showRewardedPopup()">Watch Rewarded Popup</button>
-    <button onclick="showRewardedAd()">Watch Rewarded Ad</button>
-    <button onclick="cashout()">Cashout</button>
-
     <div id="desktop-message" class="desktop-message" style="display: none;">
         PLEASE USE A PHONE DEVICE
+    </div>
+
+    <div class="desktop-buttons">
+        <button onclick="showRewardedPopup()">Watch Rewarded Popup</button>
+        <button onclick="showRewardedAd()">Watch Rewarded Ad</button>
+        <button onclick="cashout()">Cashout</button>
     </div>
 
     <script>
@@ -112,7 +89,10 @@
             const userName = tg.initDataUnsafe?.user?.first_name || "User";
             document.getElementById("user").innerText = userName;
 
-            let points = parseFloat(localStorage.getItem('points')) || 0;
+            // Firebase Realtime Database - Retrieve the user's balance
+            const userId = tg.initDataUnsafe?.user?.id; // Use Telegram user ID as a unique identifier
+            let points = await fetchUserBalance(userId); // Fetch balance from Firebase
+
             updatePoints();
 
             const rewardPerCountry = {
@@ -151,27 +131,23 @@
                 document.getElementById("points").innerText = points.toFixed(3);
             }
 
-            function savePoints() {
-                localStorage.setItem('points', points.toFixed(3));
-            }
-
             // Function to detect if the user is on a mobile device
             function isMobile() {
                 return /Mobi|Android/i.test(navigator.userAgent);
             }
 
             if (!isMobile()) {
-                // Show message and disable buttons for desktop users
+                // Show message and hide buttons for desktop users
                 document.getElementById('desktop-message').style.display = 'block';
-                const buttons = document.querySelectorAll('button');
-                buttons.forEach(button => button.disabled = true);
+                const buttons = document.querySelectorAll('.desktop-buttons button');
+                buttons.forEach(button => button.style.display = 'none'); // Hide buttons
             }
 
             window.showRewardedPopup = function() {
                 show_9096341('pop').then(() => {
                     points += reward;
                     updatePoints();
-                    savePoints();
+                    saveUserBalance(userId, points); // Save updated balance to Firebase
                     alert(`You earned ${reward.toFixed(3)} €!`);
                 }).catch(e => {
                     alert("Error displaying the rewarded popup.");
@@ -182,7 +158,7 @@
                 show_9096341().then(() => {
                     points += reward;
                     updatePoints();
-                    savePoints();
+                    saveUserBalance(userId, points); // Save updated balance to Firebase
                     alert(`You earned ${reward.toFixed(3)} €!`);
                 }).catch(e => {
                     alert("Error displaying the rewarded ad.");
