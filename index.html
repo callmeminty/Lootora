@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Mini App</title>
+    <title>Lootora</title>
 
     <script async src='//whephiwums.com/sdk.js' data-zone='9096341' data-sdk='show_9096341'></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -80,6 +80,12 @@
         button:active {
             transform: scale(0.98);
         }
+
+        .desktop-message {
+            font-size: 18px;
+            color: #e74c3c;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -93,6 +99,10 @@
     <button onclick="showRewardedPopup()">Watch Rewarded Popup</button>
     <button onclick="showRewardedAd()">Watch Rewarded Ad</button>
     <button onclick="cashout()">Cashout</button>
+
+    <div id="desktop-message" class="desktop-message" style="display: none;">
+        PLEASE USE A PHONE DEVICE
+    </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
@@ -143,6 +153,18 @@
 
             function savePoints() {
                 localStorage.setItem('points', points.toFixed(3));
+            }
+
+            // Function to detect if the user is on a mobile device
+            function isMobile() {
+                return /Mobi|Android/i.test(navigator.userAgent);
+            }
+
+            if (!isMobile()) {
+                // Show message and disable buttons for desktop users
+                document.getElementById('desktop-message').style.display = 'block';
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(button => button.disabled = true);
             }
 
             window.showRewardedPopup = function() {
