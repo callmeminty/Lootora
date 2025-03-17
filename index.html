@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Mini App</title>
+    <title>My Mini App</title>
 
     <script async src='//whephiwums.com/sdk.js' data-zone='9096341' data-sdk='show_9096341'></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -90,54 +90,79 @@
     </style>
 </head>
 <body>
-    <h1>Olá, <span id="user">Usuário</span>!</h1>
+    <h1>Hello, <span id="user">User</span>!</h1>
 
     <div class="points">
-        Pontos: <span id="pontos">0.000</span> €
-        <img id="flag" class="flag" src="" alt="Bandeira">
+        Points: <span id="points">0.000</span> €
+        <img id="flag" class="flag" src="" alt="Flag">
     </div>
 
-    <button onclick="fecharApp()">Fechar App</button>
-    <button onclick="mostrarPopup()">Mostrar Popup</button>
-    <button onclick="mostrarPopupRecompensa()">Assistir Anúncio (Rewarded)</button>
+    <button onclick="closeApp()">Close App</button>
+    <button onclick="showPopup()">Show Popup</button>
+    <button onclick="showRewardedAd()">Watch Ad (Rewarded)</button>
 
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
             const tg = window.Telegram.WebApp;
             tg.expand();
 
-            const userName = tg.initDataUnsafe?.user?.first_name || "Usuário";
+            const userName = tg.initDataUnsafe?.user?.first_name || "User";
             document.getElementById("user").innerText = userName;
 
-            let pontos = parseFloat(localStorage.getItem('pontos')) || 0;
-            atualizarPontos();
+            let points = parseFloat(localStorage.getItem('points')) || 0;
+            updatePoints();
 
-            window.fecharApp = function() {
+            const rewardPerCountry = {
+                'US': 0.005,
+                'BR': 0.002,
+                'IN': 0.003,
+                'DE': 0.004,
+                'FR': 0.004,
+                'DEFAULT': 0.002
+            };
+
+            async function fetchUserCountry() {
+                try {
+                    let response = await fetch('https://ipapi.co/json/');
+                    let data = await response.json();
+                    return data.country_code;
+                } catch (error) {
+                    return 'DEFAULT';
+                }
+            }
+
+            const userCountry = await fetchUserCountry();
+            const reward = rewardPerCountry[userCountry] || rewardPerCountry.DEFAULT;
+            document.getElementById("flag").src = `https://flagcdn.com/32x24/${userCountry.toLowerCase()}.png`;
+
+            window.closeApp = function() {
                 tg.close();
             };
 
-            function atualizarPontos() {
-                document.getElementById("pontos").innerText = pontos.toFixed(3);
+            function updatePoints() {
+                document.getElementById("points").innerText = points.toFixed(3);
             }
 
-            function salvarPontos() {
-                localStorage.setItem('pontos', pontos.toFixed(3));
+            function savePoints() {
+                localStorage.setItem('points', points.toFixed(3));
             }
 
-            window.mostrarPopup = function() {
+            window.showPopup = function() {
                 show_9096341('pop').then(() => {
-                    alert('Você assistiu ao Popup!');
+                    alert('You watched the popup!');
                 }).catch(e => {
-                    alert("Erro ao tentar exibir o Popup.");
+                    alert("Error displaying the popup.");
                 });
             };
 
-            window.mostrarPopupRecompensa = function() {
+            window.showRewardedAd = function() {
                 show_9096341().then(() => {
-                    alert('Você assistiu a um anúncio!');
-                    // Adicione aqui a lógica para recompensar o usuário
+                    points += reward;
+                    updatePoints();
+                    savePoints();
+                    alert(`You earned ${reward.toFixed(3)} €!`);
                 }).catch(e => {
-                    alert("Erro ao tentar exibir o anúncio recompensado.");
+                    alert("Error displaying the rewarded ad.");
                 });
             };
 
