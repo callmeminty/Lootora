@@ -17,7 +17,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: #f0f2f5;
+            background: linear-gradient(135deg, #f3f4f6, #d1d8e0);
             color: #333;
             display: flex;
             flex-direction: column;
@@ -90,9 +90,9 @@
         <span id="flag"></span>
     </div>
 
-    <button onclick="closeApp()">Close App</button>
-    <button onclick="showPopup()">Show Popup</button>
-    <button onclick="showRewardedAd()">Watch Ad (Rewarded)</button>
+    <button onclick="showRewardedPopup()">Watch Rewarded Popup</button>
+    <button onclick="showRewardedAd()">Watch Rewarded Ad</button>
+    <button onclick="cashout()">Cashout</button>
 
     <script>
         document.addEventListener("DOMContentLoaded", async function() {
@@ -137,10 +137,6 @@
             const reward = rewardPerCountry[userCountry] || rewardPerCountry.DEFAULT;
             document.getElementById("flag").innerText = countryFlags[userCountry] || countryFlags.DEFAULT;
 
-            window.closeApp = function() {
-                tg.close();
-            };
-
             function updatePoints() {
                 document.getElementById("points").innerText = points.toFixed(3);
             }
@@ -149,11 +145,14 @@
                 localStorage.setItem('points', points.toFixed(3));
             }
 
-            window.showPopup = function() {
+            window.showRewardedPopup = function() {
                 show_9096341('pop').then(() => {
-                    alert('You watched the popup!');
+                    points += reward;
+                    updatePoints();
+                    savePoints();
+                    alert(`You earned ${reward.toFixed(3)} €!`);
                 }).catch(e => {
-                    alert("Error displaying the popup.");
+                    alert("Error displaying the rewarded popup.");
                 });
             };
 
@@ -168,16 +167,9 @@
                 });
             };
 
-            show_9096341({ 
-              type: 'inApp', 
-              inAppSettings: { 
-                frequency: 2, 
-                capping: 0.1, 
-                interval: 30, 
-                timeout: 5, 
-                everyPage: false 
-              } 
-            });
+            window.cashout = function() {
+                alert("Cashout feature coming soon! Stay tuned.");
+            };
         });
     </script>
 </body>
